@@ -29,7 +29,7 @@ This project was developed as part of an Android TV assignment focusing on netwo
 
 ## Home Screen
 
-![Home](screenshots/home.png)
+<img src="https://github.com/hitanshigajjar1/NewsHeadlinesTV/blob/master/app/src/main/assets/screenshot.jpeg" alt="Home Screen" width="350">
 
 ---
 
@@ -37,8 +37,7 @@ This project was developed as part of an Android TV assignment focusing on netwo
 
 A short demonstration of the application.
 
-![Demo](demo/news_demo.gif)
-
+<video src="https://github.com/hitanshigajjar1/NewsHeadlinesTV/blob/master/app/src/main/assets/demo.mp4" width="100%" controls></video>
 ---
 # 🛠 Tech Stack
 
