@@ -8,6 +8,8 @@ data class NewsUiState(
 
     val articles: List<Article> = emptyList(),
 
-    val error: String? = null
+    val error: String? = null,
+
+    val isRefreshing: Boolean = false
 
 )

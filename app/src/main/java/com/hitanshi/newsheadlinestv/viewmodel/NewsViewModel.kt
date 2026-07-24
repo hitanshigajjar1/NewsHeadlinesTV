@@ -3,6 +3,7 @@ package com.hitanshi.newsheadlinestv.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hitanshi.newsheadlinestv.data.repository.NewsRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,9 +22,13 @@ class NewsViewModel(
         refreshNews()
     }
 
+    private var refreshJob: Job? = null
+
     fun refreshNews() {
 
-        viewModelScope.launch {
+        if (refreshJob?.isActive == true) return
+
+        refreshJob = viewModelScope.launch {
 
             _uiState.value =
                 _uiState.value.copy(
@@ -36,7 +41,7 @@ class NewsViewModel(
                 val news = repository.getHeadlines()
 
                 _uiState.value =
-                    NewsUiState(
+                    _uiState.value.copy(
                         isLoading = false,
                         articles = news
                     )
@@ -44,9 +49,9 @@ class NewsViewModel(
             } catch (e: Exception) {
 
                 _uiState.value =
-                    NewsUiState(
+                    _uiState.value.copy(
                         isLoading = false,
-                        error = e.message ?: "Unknown Error"
+                        error = e.message
                     )
 
             }
@@ -54,5 +59,4 @@ class NewsViewModel(
         }
 
     }
-
 }
