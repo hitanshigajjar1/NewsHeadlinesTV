@@ -5,7 +5,7 @@ object Constants {
     const val BASE_URL = "https://newsapi.org/v2/"
 
     // Replace with your own API key
-    const val API_KEY = "55989dd737224d57ba6cc46763ccbbb8"
+    const val API_KEY = "ADD NEWS API KEY HERE"
 
     const val COUNTRY = "us"
 

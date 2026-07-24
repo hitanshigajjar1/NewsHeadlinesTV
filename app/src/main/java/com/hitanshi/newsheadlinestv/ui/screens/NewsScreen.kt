@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,83 +50,89 @@ fun NewsScreen(
         }
     }
 
-    Box(
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF101010))
-        // NOTE: removed the stray .focusable() that was on this Box.
-        // It had no visual/behavioral purpose and could steal initial
-        // focus away from the cards, which was part of why nothing
-        // ever appeared focused.
     ) {
 
-        when {
+        Text(
+            text = "News Headlines",
+            color = Color.White,
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 48.dp, top = 32.dp, bottom = 16.dp)
+        )
 
-            state.isLoading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
 
-            state.error != null -> {
-                Text(
-                    text = state.error!!,
-                    color = Color.Red,
-                    fontSize = 22.sp,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+            when {
 
-            else -> {
+                state.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
 
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .focusGroup(), // lets D-Pad left/right move focus between cards
-                    horizontalArrangement = Arrangement.spacedBy(32.dp),
-                    // BUG FIX: LazyRow previously stretched items to fill
-                    // its full height (combined with Card's .fillMaxHeight()
-                    // in NewsCard), which is why expanding a card's summary
-                    // had no visible effect — there was no room to grow into.
-                    // Aligning items to the top lets each card size itself
-                    // to its own content instead.
-                    verticalAlignment = Alignment.Top,
-                    contentPadding = PaddingValues(48.dp)
-                ) {
+                state.error != null -> {
+                    Text(
+                        text = state.error!!,
+                        color = Color.Red,
+                        fontSize = 22.sp,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
 
-                    itemsIndexed(
-                        items = state.articles,
-                        key = { index, article -> article.url ?: index }
-                    ) { index, article ->
+                else -> {
 
-                        NewsCard(
-                            article = article,
-                            focusRequester = if (index == 0) firstItemFocusRequester else null,
-                            onRefresh = {
-                                if (!state.isLoading) {
-                                    refreshing = true
-                                    viewModel.refreshNews()
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .focusGroup(),
+                        horizontalArrangement = Arrangement.spacedBy(32.dp),
+                        verticalAlignment = Alignment.Top,
+                        contentPadding = PaddingValues(48.dp)
+                    ) {
+
+                        itemsIndexed(
+                            items = state.articles,
+                            key = { index, article -> article.url ?: index }
+                        ) { index, article ->
+
+                            NewsCard(
+                                article = article,
+                                focusRequester = if (index == 0) firstItemFocusRequester else null,
+                                onRefresh = {
+                                    if (!state.isLoading) {
+                                        refreshing = true
+                                        viewModel.refreshNews()
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        if (refreshing) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                Text(
-                    text = "Refreshing News...",
-                    color = Color.Yellow,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
+            if (refreshing) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp)) {
+                    Text(
+                        text = "Refreshing News...",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                }
             }
         }
     }
