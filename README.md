@@ -33,11 +33,13 @@ This project was developed as part of an Android TV assignment focusing on netwo
 
 ---
 
-# 🎥 Demo
+## 🎥 Demo
 
-A short demonstration of the application.
 
-<video src="https://github.com/hitanshigajjar1/NewsHeadlinesTV/blob/master/app/src/main/assets/demo.mp4" width="100%" controls></video>
+
+https://drive.google.com/drive/folders/1elBF6W4s01zVnmPARB_Ncg0mjwvNsVHQ
+
+
 ---
 # 🛠 Tech Stack
 
