@@ -83,6 +83,13 @@ fun NewsScreen(
                         .fillMaxSize()
                         .focusGroup(), // lets D-Pad left/right move focus between cards
                     horizontalArrangement = Arrangement.spacedBy(32.dp),
+                    // BUG FIX: LazyRow previously stretched items to fill
+                    // its full height (combined with Card's .fillMaxHeight()
+                    // in NewsCard), which is why expanding a card's summary
+                    // had no visible effect — there was no room to grow into.
+                    // Aligning items to the top lets each card size itself
+                    // to its own content instead.
+                    verticalAlignment = Alignment.Top,
                     contentPadding = PaddingValues(48.dp)
                 ) {
 
