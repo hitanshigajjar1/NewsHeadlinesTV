@@ -1,37 +1,25 @@
 package com.hitanshi.newsheadlinestv.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.hitanshi.newsheadlinestv.viewmodel.NewsViewModel
 
 @Composable
@@ -41,144 +29,97 @@ fun NewsScreen(
 
     val state by viewModel.uiState.collectAsState()
 
-    var pressStart by remember {
-        mutableLongStateOf(0L)
-    }
+    var refreshing by remember { mutableStateOf(false) }
 
-    val firstItemFocusRequester = remember {
-        FocusRequester()
-    }
+    // FocusRequester for the very first card so the row has an
+    // initial focus target as soon as data is loaded.
+    val firstItemFocusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(state.articles.size) {
+    // Request focus on the first card whenever a fresh article list arrives.
+    LaunchedEffect(state.articles) {
         if (state.articles.isNotEmpty()) {
-            firstItemFocusRequester.requestFocus()
+            runCatching { firstItemFocusRequester.requestFocus() }
         }
     }
 
-    Column(
+    // Once a refresh finishes, drop the "Refreshing..." banner.
+    LaunchedEffect(state.isLoading) {
+        if (!state.isLoading) {
+            refreshing = false
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(Color(0xFF101010))
+        // NOTE: removed the stray .focusable() that was on this Box.
+        // It had no visual/behavioral purpose and could steal initial
+        // focus away from the cards, which was part of why nothing
+        // ever appeared focused.
     ) {
 
-        if (state.isLoading) {
+        when {
 
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth()
-            )
-
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .focusable()
-                .onPreviewKeyEvent {
-
-                    if (it.key == Key.DirectionDown) {
-
-                        when (it.type) {
-
-                            KeyEventType.KeyDown -> {
-
-                                pressStart = System.currentTimeMillis()
-                                false
-
-                            }
-
-                            KeyEventType.KeyUp -> {
-
-                                val duration =
-                                    System.currentTimeMillis() - pressStart
-
-                                if (duration >= 700) {
-
-                                    viewModel.refreshNews()
-
-                                    true
-
-                                } else {
-
-                                    false
-
-                                }
-
-                            }
-
-                            else -> false
-                        }
-
-                    } else {
-
-                        false
-
-                    }
-
-                }
-
-        ) {
-
-            when {
-
-                state.isLoading && state.articles.isEmpty() -> {
-
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-
-                }
-
-                state.error != null -> {
-
-                    Text(
-                        text = state.error!!,
-                        color = Color.Red,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-
-                }
-
-                else -> {
-
-                    LazyColumn(
-
-                        modifier = Modifier.fillMaxSize(),
-
-                        contentPadding = PaddingValues(24.dp),
-
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
-
-                    ) {
-
-                        itemsIndexed(state.articles) { index, article ->
-
-                            if (index == 0) {
-
-                                Box(
-                                    modifier = Modifier
-                                        .focusRequester(firstItemFocusRequester)
-                                ) {
-
-                                    NewsCard(article)
-
-                                }
-
-                            } else {
-
-                                NewsCard(article)
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
+            state.isLoading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
 
+            state.error != null -> {
+                Text(
+                    text = state.error!!,
+                    color = Color.Red,
+                    fontSize = 22.sp,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            else -> {
+
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .focusGroup(), // lets D-Pad left/right move focus between cards
+                    horizontalArrangement = Arrangement.spacedBy(32.dp),
+                    contentPadding = PaddingValues(48.dp)
+                ) {
+
+                    itemsIndexed(
+                        items = state.articles,
+                        key = { index, article -> article.url ?: index }
+                    ) { index, article ->
+
+                        NewsCard(
+                            article = article,
+                            focusRequester = if (index == 0) firstItemFocusRequester else null,
+                            onRefresh = {
+                                if (!state.isLoading) {
+                                    refreshing = true
+                                    viewModel.refreshNews()
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
 
+        if (refreshing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Text(
+                    text = "Refreshing News...",
+                    color = Color.Yellow,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            }
+        }
     }
-
 }
