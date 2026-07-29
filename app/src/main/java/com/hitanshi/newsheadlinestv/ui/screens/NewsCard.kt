@@ -1,6 +1,5 @@
 package com.hitanshi.newsheadlinestv.ui.screens
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -35,10 +34,10 @@ import com.hitanshi.newsheadlinestv.data.model.Article
 fun NewsCard(
     article: Article,
     onRefresh: () -> Unit,
+    onArticleClick: () -> Unit,
     focusRequester: FocusRequester? = null
 ) {
 
-    var expanded by remember { mutableStateOf(false) }
     var focused by remember { mutableStateOf(false) }
     var pressStart by remember { mutableStateOf(0L) }
 
@@ -47,22 +46,12 @@ fun NewsCard(
         label = "cardScale"
     )
 
-    // --- BUG FIX -------------------------------------------------------
-    // The card previously used `.fillMaxHeight()`, which locks the card
-    // to the full height of the parent LazyRow *before* content is even
-    // measured. That means when `expanded` flips to true and maxLines
-    // changes, there is no room for the card to grow into, so
-    // animateContentSize() has nothing to animate and the extra text
-    // just gets clipped — making it look like "Read more" does nothing.
-    //
-    // Fix: let the card wrap its own content within a min/max height
-    // range instead of stretching to fill the row. Combined with
-    // `verticalAlignment = Alignment.Top` on the LazyRow (see
-    // NewsScreen.kt), the card can now actually expand downward.
-    // ---------------------------------------------------------------------
+    // Card no longer expands in place. Selecting OK/Enter now opens a full
+    // summary in an AlertDialog (see NewsScreen.kt) instead of growing the
+    // card inline, which was fighting the LazyRow's height constraint.
     var baseModifier = Modifier
         .width(620.dp)
-        .heightIn(min = 560.dp, max = 900.dp)
+        .heightIn(min = 560.dp, max = 620.dp)
         .scale(scale)
 
     if (focusRequester != null) {
@@ -79,11 +68,13 @@ fun NewsCard(
 
                 when (event.key) {
 
+                    // Select/OK now opens the AlertDialog with the full
+                    // summary instead of toggling a local expanded state.
                     Key.DirectionCenter,
                     Key.Enter,
                     Key.NumPadEnter -> {
                         if (event.type == KeyEventType.KeyUp) {
-                            expanded = !expanded
+                            onArticleClick()
                         }
                         true
                     }
@@ -120,7 +111,6 @@ fun NewsCard(
             containerColor = Color(0xFF1A1A1A)
         ),
 
-        // White border when focused (was Color.Green)
         border = BorderStroke(
             if (focused) 3.dp else 1.dp,
             if (focused) Color.White else Color.DarkGray
@@ -129,9 +119,7 @@ fun NewsCard(
     ) {
 
         Column(
-            Modifier
-                .padding(20.dp)
-                .animateContentSize()
+            Modifier.padding(20.dp)
         ) {
 
             AsyncImage(
@@ -145,7 +133,6 @@ fun NewsCard(
 
             Spacer(Modifier.height(16.dp))
 
-            // Source + time badge row, matching the reference UI
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -173,7 +160,9 @@ fun NewsCard(
                 text = article.title,
                 color = Color.White,
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
 
             Spacer(Modifier.height(12.dp))
@@ -183,14 +172,14 @@ fun NewsCard(
                 color = Color.LightGray,
                 fontSize = 18.sp,
                 lineHeight = 24.sp,
-                maxLines = if (expanded) Int.MAX_VALUE else 3,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
 
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = if (expanded) "▲ Collapse" else "▼ Read more",
+                text = "▶ Press OK for full story",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
