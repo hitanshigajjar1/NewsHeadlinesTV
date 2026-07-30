@@ -29,15 +29,16 @@ This project was developed as part of an Android TV assignment focusing on netwo
 
 ## Home Screen
 
-![Home](screenshots/home.png)
+<img src="https://github.com/hitanshigajjar1/NewsHeadlinesTV/blob/master/app/src/main/assets/screenshot.jpeg" alt="Home Screen" width="350">
 
 ---
 
-# 🎥 Demo
+## 🎥 Demo
 
-A short demonstration of the application.
 
-![Demo](demo/news_demo.gif)
+
+https://drive.google.com/drive/folders/1elBF6W4s01zVnmPARB_Ncg0mjwvNsVHQ
+
 
 ---
 # 🛠 Tech Stack
