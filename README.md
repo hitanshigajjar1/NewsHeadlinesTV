@@ -150,6 +150,7 @@ Parameters
 - Focusable Cards
 - Long Press DPAD Down Refresh
 - Loading Indicator During Refresh
+- Expand / Collapse Summary 
 
 ---
 
@@ -171,7 +172,7 @@ Parameters
 | MVVM Architecture | ✅ |
 | Structured Concurrency | ✅ |
 | Parallel API Calls | ✅ |
-| Expand / Collapse Summary | 🚧 Work In Progress |
+| Expand / Collapse Summary |  ✅  |
 | Offline Cache (Room Database) | 🚧 Planned |
 
 ---
@@ -238,7 +239,6 @@ or
 # 🚧 Future Improvements
 
 - Offline Room Database Cache
-- Expand / Collapse Summary Animation
 - Better Focus Animations
 - Search Headlines
 - Category Filter
